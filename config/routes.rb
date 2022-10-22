@@ -10,4 +10,5 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "articles#index"
+  get "calendar/list", to: "calendar#list_manager_calendar"
 end

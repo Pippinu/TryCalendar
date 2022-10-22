@@ -14,6 +14,13 @@ class User < ApplicationRecord
       # If you are using confirmable and the provider(s) you use validate emails,
       # uncomment the line below to skip the confirmation emails.
       # user.skip_confirmation!
+
+      # Dalla autenticazione fornita dalla gemma Omniauth ottengo sia access token
+      # che, avendo immesso in config/initializer/devise.rb in config.omniauth
+      # la stringa access_type: offline, il refresh token.
+      user.access_token = auth.credentials.token
+      user.refresh_token = auth.credentials.refresh_token
+      user.expires_at = auth.credentials.expires_at
     end
   end
 end
