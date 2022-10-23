@@ -9,32 +9,65 @@ class CalendarController < ApplicationController
         @calendar = Calendar.new
     end
 
+    def create
+        client = get_google_calendar_client current_user
+        calendarList = client.list_calendar_lists()
+
+        calendarList.items.each do |calendar|
+            if calendar.summary === "Youtube Manager Calendar User #{current_user.id}"
+                hash = makeHash(calendar)
+
+                if !Calendar.exists?(hash: hash)
+                    calendarToSave = Calendar.new(
+                        calendarId: calendar.id,
+                        summary: calendar.summary,
+                        userId: current_user.id,
+                        hash: hash.to_s
+                    )
+                    # Sistemare, salva ma da errore
+                    calendarToSave.save
+                end
+                
+                calendarID = Calendar.find_by(hash: hash)
+                redirect_to getCalendar_path(:selectedCalendarId => calendarID.id)
+                return 
+            end
+        end
+
+        googleCalendar = Google::Apis::CalendarV3::Calendar.new(
+            summary: "Youtube Manager Calendar User #{current_user.id}",
+            time_zone: 'Europe/Rome'
+        )
+    
+        @createdCalendar = client.insert_calendar(googleCalendar)
+    end
+
     def list_manager_calendar
         client = get_google_calendar_client current_user
-        @calendarList = client.list_calendar_lists()
+        calendarList = client.list_calendar_lists()
 
-        @calendarList.items.each do |calendar|
+        calendarList.items.each do |calendar|
             # Creo Hash del calendario per controllare che questo sia gia presente nel Database
             hash = makeHash(calendar)
 
             if !Calendar.exists?(hash: hash)
                 calendarToSave = Calendar.new(
-                    # Ha senso calendarId stringa o meglio integer?
-                    calendarId: calendar.id.to_s,
+                    calendarId: calendar.id,
                     summary: calendar.summary,
-                    userId: current_user.id,
+                    userId: current_user.id.to_s,
                     hash: hash
                 )
                 # Sistemare, non salva
                 calendarToSave.save
             end
-        end 
+        end
+
+        @calendarList = Calendar.where(userId: current_user.id)
     end
 
     def getCalendar
-        client = get_google_calendar_client current_user
-        selectedCalendarId = params[:selectedCalendarId]
-        @calendar = client.get_calendar(selectedCalendarId)
+        selectedCalendar = params[:selectedCalendarId]
+        @calendar = Calendar.find(selectedCalendar)
     end
 
     def get_google_calendar_client current_user
@@ -69,7 +102,6 @@ class CalendarController < ApplicationController
 
     def makeHash(calendarToHash)
         hash = Hash[
-            calendarId: calendarToHash.id, 
             summary: calendarToHash.summary, 
             idUtente: current_user.id
         ].hash

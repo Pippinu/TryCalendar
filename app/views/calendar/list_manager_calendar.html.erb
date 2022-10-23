@@ -1,6 +1,6 @@
 <ul class="list-group">
-    <% @calendarList.items.each do |calendar|%>
-        <%= link_to getCalendar_path(:selectedCalendar => calendar) do %>
+    <% @calendarList.each do |calendar|%>
+        <%= link_to getCalendar_path(:selectedCalendarId => calendar.id) do %>
             <li class="list-group-item"><%= calendar.summary %></li>
         <% end %>
     <% end %>

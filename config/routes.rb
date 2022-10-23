@@ -12,5 +12,7 @@ Rails.application.routes.draw do
   # root "articles#index"
   get "calendar/list", to: "calendar#list_manager_calendar"
   get "getCalendar/" , to: "calendar#getCalendar"
+  get "create/" , to: "calendar#create"
+
   
 end
