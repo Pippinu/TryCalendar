@@ -1,5 +1,8 @@
 require "google/apis/calendar_v3"
 require "google/api_client/client_secrets.rb"
+require "json"
+
+# Sistemare token expire, non richiede nuovo token
 
 class CalendarController < ApplicationController
     def new
@@ -9,6 +12,29 @@ class CalendarController < ApplicationController
     def list_manager_calendar
         client = get_google_calendar_client current_user
         @calendarList = client.list_calendar_lists()
+
+        @calendarList.items.each do |calendar|
+            # Creo Hash del calendario per controllare che questo sia gia presente nel Database
+            hash = makeHash(calendar)
+
+            if !Calendar.exists?(hash: hash)
+                calendarToSave = Calendar.new(
+                    # Ha senso calendarId stringa o meglio integer?
+                    calendarId: calendar.id.to_s,
+                    summary: calendar.summary,
+                    userId: current_user.id,
+                    hash: hash
+                )
+                # Sistemare, non salva
+                calendarToSave.save
+            end
+        end 
+    end
+
+    def getCalendar
+        client = get_google_calendar_client current_user
+        selectedCalendarId = params[:selectedCalendarId]
+        @calendar = client.get_calendar(selectedCalendarId)
     end
 
     def get_google_calendar_client current_user
@@ -39,5 +65,15 @@ class CalendarController < ApplicationController
           redirect_to :back
         end
         client
+    end
+
+    def makeHash(calendarToHash)
+        hash = Hash[
+            calendarId: calendarToHash.id, 
+            summary: calendarToHash.summary, 
+            idUtente: current_user.id
+        ].hash
+
+        return hash
     end
 end

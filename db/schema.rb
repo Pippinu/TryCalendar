@@ -10,7 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_10_22_160450) do
+ActiveRecord::Schema[7.0].define(version: 2022_10_23_100754) do
+  create_table "calendars", force: :cascade do |t|
+    t.string "calendarId", default: "", null: false
+    t.string "summary"
+    t.integer "userId"
+    t.integer "managerId"
+    t.string "hash"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "full_name"
     t.string "uid"

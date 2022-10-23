@@ -77,3 +77,5 @@ gem 'omniauth-google-oauth2'
 gem "omniauth-rails_csrf_protection", "~> 1.0"
 
 gem 'google-api-client', require: 'google/apis/calendar_v3'
+
+gem 'json'
